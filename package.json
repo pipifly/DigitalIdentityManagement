@@ -16,6 +16,7 @@
   "homepage": "https://github.com/FredyVia/DigitalIdentityManagement#readme",
   "dependencies": {
     "babel-polyfill": "^6.26.0",
+    "keccak": "^3.0.2",
     "openzeppelin-solidity": "^1.10.0",
     "scrypt": "github:barrysteyn/node-scrypt#fb60a8d3c158fe115a624b5ffa7480f3a24b03fb",
     "secp256k1": "^3.7.1",
