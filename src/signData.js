@@ -16,9 +16,10 @@ function createAccount(Web3) {
   return Web3.eth.accounts.create();
 }
 
-function signEthTxn () {
+function signEthTxn (web3) {
+  web3.eth.accounts.privateKeyToAccount('0xa641dd97b3e72a419e483b99d61998b3ade7fd8f50296e0df382af74334a0131');
   const orderHash = Web3.utils.asciiToHex("fk!!!");
-  console.log("直接使用web3.eth.accounts.sign, 会自动带上preifix。签名结果: ", Web3.eth.accounts.sign(orderHash, privateKey));
+  console.log("直接使用web3.eth.accounts.sign, 会自动带上preifix。签名结果: ", web3.eth.accounts.sign(orderHash, privateKey));
 }
 
 function recoverPublicKey(data, signature) {
@@ -82,7 +83,7 @@ function publicKeyToAddress (publicKey) {
 }
 
 (async () => {
-  // const web3 = new Web3(new Web3.providers.HttpProvider("https://ropsten.infura.io/v3/4fd2305497f349fb81fba70405c9f9fe"))
+  const web3 = new Web3(new Web3.providers.HttpProvider("https://ropsten.infura.io/v3/4fd2305497f349fb81fba70405c9f9fe"))
   // const web3 = await new Web3();
   // web3.eth.accounts.privateKeyToAccount('0xa641dd97b3e72a419e483b99d61998b3ade7fd8f50296e0df382af74334a0131');
   // const accounts = await web3.eth.personal.getAccounts();
@@ -95,4 +96,5 @@ function publicKeyToAddress (publicKey) {
   });
   console.log(signString(dataString, privateKey));
   // const address = publicKeyToAddress(createPubkey(privateKey));
+  // signEthTxn(web3);
 })()
