@@ -20,7 +20,8 @@ const { ANT_DESIGN_PRO_ONLY_DO_NOT_USE_IN_YOUR_PRODUCTION } = process.env;
  * current user access， if is '', user need login
  * 如果是 pro 的预览，默认是有权限的
  */
-let access = ANT_DESIGN_PRO_ONLY_DO_NOT_USE_IN_YOUR_PRODUCTION === 'site' ? 'admin' : '';
+// let access = ANT_DESIGN_PRO_ONLY_DO_NOT_USE_IN_YOUR_PRODUCTION === 'site' ? 'admin' : '';
+let access = 'admin'
 
 const getAccess = () => {
   return access;
@@ -44,7 +45,7 @@ export default {
     res.send({
       success: true,
       data: {
-        name: 'Serati Ma',
+        name: access,
         avatar: 'https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png',
         userid: '00000001',
         email: 'antdesign@alipay.com',
