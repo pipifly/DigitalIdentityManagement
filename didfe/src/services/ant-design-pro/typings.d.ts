@@ -1,6 +1,13 @@
 // @ts-ignore
 /* eslint-disable */
-
+declare namespace DID {
+  
+  type CurrentAccount = {
+    account?: string;
+    holdVc?: any [];
+    createdVc: any [];
+  }
+}
 declare namespace API {
   type CurrentUser = {
     name?: string;

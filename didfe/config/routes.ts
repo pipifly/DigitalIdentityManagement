@@ -20,6 +20,8 @@ export default [
     ],
   },
   { name: '查询表格', icon: 'table', path: '/list', component: './TableList' },
+  { name: 'Web3使用', icon: 'ApiOutlined', path: '/web3use', component: './Web3Use'},
+  { name: '创建VC', icon: 'FileTextOutlined', path: '/createvc', component: './CreateVc'},
   { path: '/', redirect: '/welcome' },
   { component: './404' },
 ];

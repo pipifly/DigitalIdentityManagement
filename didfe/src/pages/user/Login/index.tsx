@@ -35,9 +35,10 @@ const Login: React.FC = () => {
 
   const fetchUserInfo = async () => {
     const userInfo = await initialState?.fetchUserInfo?.();
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });;
 
-    if (userInfo) {
-      await setInitialState((s) => ({ ...s, currentUser: userInfo }));
+    if (userInfo && accounts.length !== 0) {
+      await setInitialState((s) => ({ ...s, ...{account: accounts[0], currentUser: userInfo }}));
     }
   };
 
@@ -65,6 +66,7 @@ const Login: React.FC = () => {
 
       setUserLoginState(msg);
     } catch (error) {
+      console.log("login error", error);
       const defaultLoginFailureMessage = '登录失败，请重试！';
       message.error(defaultLoginFailureMessage);
     }
@@ -110,7 +112,7 @@ const Login: React.FC = () => {
                 placeholder={'用户名: admin or user'}
                 rules={[
                   {
-                    required: true,
+                    // required: true,
                     message: '用户名是必填项！',
                   },
                 ]}
@@ -124,7 +126,7 @@ const Login: React.FC = () => {
                 placeholder={'密码: ant.design'}
                 rules={[
                   {
-                    required: true,
+                    // required: true,
                     message: '密码是必填项！',
                   },
                 ]}
