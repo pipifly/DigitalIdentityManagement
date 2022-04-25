@@ -11,7 +11,8 @@ const Settings: LayoutSettings & {
   "fixedHeader": true,
   "fixSiderbar": true,
   "pwa": false,
-  "logo": "https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg",
+  "title": 'DID 管理系统',
+  "logo": "https://gw.alipayobjects.com/mdn/rms_b5fcc5/afts/img/A*1NHAQYduQiQAAAAAAAAAAABkARQnAQ",
   "headerHeight": 48,
   "splitMenus": false
 }

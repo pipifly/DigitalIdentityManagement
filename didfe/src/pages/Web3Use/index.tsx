@@ -64,7 +64,7 @@ const Web3Use: React.FC = () => {
 
   return (
     <PageContainer
-      content="使用Web3js"
+      // content="使用Web3js"
     >
       <ProCard direction="column" title="信息">
         <span style={{display: "block"}}>网络名: {ethereum && ethereum.chainId}</span>

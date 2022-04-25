@@ -1,5 +1,5 @@
 {
-  "name": "ant-design-pro",
+  "name": "DID-Management-System",
   "version": "5.2.0",
   "private": true,
   "description": "An out-of-box UI solution for enterprise applications",
@@ -64,6 +64,8 @@
     "react-dev-inspector": "^1.7.0",
     "react-dom": "^17.0.0",
     "react-helmet-async": "^1.2.0",
+    "react-json-pretty": "^2.2.0",
+    "react-json-view": "^1.19.1",
     "umi": "^3.5.0",
     "web3": "^1.7.3"
   },
