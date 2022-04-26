@@ -5,6 +5,7 @@ import { Card, Alert, Typography, Button } from 'antd';
 import Chains from '../../utils/chains';
 import styles from './index.less';
 import Web3 from 'web3';
+import { signString  } from '@/utils';
 
 const Web3Use: React.FC = () => {
 
@@ -43,17 +44,17 @@ const Web3Use: React.FC = () => {
 
   console.log("ethereum", ethereum);
 
-  const signString = (content: string) => {
+  const signString1 = (content: string) => {
     const dataHex = Web3.utils.utf8ToHex(content);
     const sha_hash = Web3.utils.soliditySha3(dataHex);
     // const signature = web3.eth.sign(String(sha_hash), accounts[0]);
-    const signature = web3.eth.sign(String(sha_hash), "0x7B68ce204e3309b8DA0a549a94947cfAD0e5d2a4");
+    const signature = web3.eth.sign(String(sha_hash), "0x73d6189c34C0A357A5850f315eE2120be1F2E5cd");
     return signature;
   }
 
   const signData = async (data: any) => {
     const string = JSON.stringify(data);
-    console.log(signString(string));
+    console.log(await signString(string, web3, "0x73d6189c34C0A357A5850f315eE2120be1F2E5cd"));
   }
 
   const getAccounts = async () => {

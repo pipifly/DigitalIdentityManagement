@@ -9,7 +9,7 @@ import { useModel } from 'umi';
 import styles from './index.less';
 import JSONPretty from 'react-json-pretty';
 import 'react-json-pretty/themes/monikai.css';
-
+import { signString } from '@/utils';
 
 const waitTime = (time: number = 100) => {
   return new Promise((resolve) => {
@@ -57,13 +57,12 @@ const CreateVc: React.FC = () => {
   );
   const [vc, setVc] = useState<any>({});
 
-  const formMapVc = (values: any) => {
-    console.log("form values", values, values.dataSource);
-    let tmpVc = {
+  const formMapVc = async (values: any) => {
+    let vcInfo: DID.VcInfo = {
       id: values.id,
-      issuerDid: values.issuerDid,
-      holderDid: values.holderDid,
-      // issuanceDate: (new Date()).toISOString(),
+      issuer: values.issuerDid,
+      holder: values.holderDid,
+      issuanceDate: (new Date()).toISOString(),
       credentialSubject:{}
     };
     let vcSubject = {};
@@ -71,9 +70,20 @@ const CreateVc: React.FC = () => {
       const l = values.dataSource[i];
       vcSubject = {...vcSubject, ...{[l.keyname]: l.value} };
     }
-    tmpVc.credentialSubject = vcSubject;
-    console.log(tmpVc);
-    setVc(tmpVc);
+    vcInfo.credentialSubject = vcSubject;
+
+    const signature: DID.SignResult = await signString(JSON.stringify(vcInfo), initialState?.web3, initialState?.account);
+
+    let vcDocument: DID.VcDocument = {
+      info: vcInfo,
+      proof: {
+        creator: initialState?.account || '',
+        type: "Secp256k1",
+        signature: signature.signature
+      }
+    };
+
+    setVc(vcDocument);
   };
 
   return (
@@ -121,10 +131,11 @@ const CreateVc: React.FC = () => {
                 name="issuerDid"
                 label="发行人Did"
                 placeholder="issuer Did"
+                required
               />
-              <ProFormText width="lg" name="holderDid" label="持有人Did" placeholder="holder Did" />
+              <ProFormText required width="lg" name="holderDid" label="持有人Did" placeholder="holder Did" />
             </ProForm.Group>
-            <ProFormText width="md" name="id" label="VC编号" />
+            <ProFormText required width="md" name="id" label="VC编号" />
             <ProForm.Item
               label="VC内容"
               name="dataSource"

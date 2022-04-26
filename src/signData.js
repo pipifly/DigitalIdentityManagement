@@ -51,7 +51,7 @@ function signString(string, privateKey) {
 
   console.log("recovered == public key", recoveredPublicKey === publicKey);
   
-  const addressFromPublicKey = publicKeyToAddress(publicKey);
+  const addressFromPublicKey = publicKeyToAccount(publicKey);
 
   console.log("address from public key: ", addressFromPublicKey)
   console.log("address: ", address);
@@ -67,7 +67,7 @@ function createPublicKey(privateKey) {
 }
 
 
-function publicKeyToAddress (publicKey) {
+function publicKeyToAccount (publicKey) {
   if (!Buffer.isBuffer(publicKey)) {
     if (typeof publicKey !== 'string') {
       throw new Error('Expected Buffer or string as argument')
@@ -95,6 +95,6 @@ function publicKeyToAddress (publicKey) {
     "major": "cs"
   });
   console.log(signString(dataString, privateKey));
-  // const address = publicKeyToAddress(createPubkey(privateKey));
+  // const address = publicKeyToAccount(createPubkey(privateKey));
   // signEthTxn(web3);
 })()

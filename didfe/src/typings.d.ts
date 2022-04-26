@@ -26,3 +26,38 @@ declare const REACT_APP_ENV: 'test' | 'dev' | 'pre' | false;
 interface Window {
   ethereum: any
 } 
+
+declare namespace DID {
+  
+  type CurrentAccount = {
+    account?: string;
+    holdVc?: any [];
+    createdVc: any [];
+  }
+
+  type VcInfo = {
+    "id": string;
+    "issuer": string;
+    "holder": string;
+    "issuanceDate": string;
+    "credentialSubject": Record<string, any>; 
+  }
+
+  type VcProof = {
+    "creator": string;
+    "type": string;
+    "signature": string;
+  }
+
+  type VcDocument = {
+    info: VcInfo;
+    proof: VcProof;
+  }
+
+  type SignResult = {
+    r: string;
+    s: string;
+    v: string;
+    signature: string;
+  }
+}

@@ -25,7 +25,7 @@ export const initialStateConfig = {
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
   currentUser?: API.CurrentUser;
-  web3?: any;
+  web3?: Web3;
   account?: string;
   currentAccount?: DID.CurrentAccount;
   loading?: boolean;
