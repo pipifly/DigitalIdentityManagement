@@ -29,3 +29,21 @@ npm run signdata
 ```
 
 [**web3js方法列表**](http://cw.hubwiz.com/card/c/web3.js-1.0/1/2/23/l)
+
+## Did合约
+
+实现了createVC 和 removeVC。signature长为32字节。
+
+secp256k1 签名后的signature 长为65字节。使用`Web3.utils.soliditySha3(dataHex);`可以讲仍以长度hex格式数据hash到32字节。
+
+```json
+{
+  message: '0x666b212121',
+  messageHash: '0x6bae94bd7e35d811f5de76e1315297f77808ef8e7d69aaae41ce35a52863cfb0',
+  v: '0x1b',
+  r: '0xd976332072787ea6648950a336e6f33bf59c2da4f8aee50938ce294ddd5fe4b6',
+  s: '0x6266dcf4fb72051082c6dd0c266b5bde920edcab9b06b9582170480d0789e62d',
+  signature: '0xd976332072787ea6648950a336e6f33bf59c2da4f8aee50938ce294ddd5fe4b66266dcf4fb72051082c6dd0c266b5bde920edcab9b06b9582170480d0789e62d1b'
+}
+```
+
