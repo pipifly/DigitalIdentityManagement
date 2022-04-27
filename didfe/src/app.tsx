@@ -27,6 +27,7 @@ export async function getInitialState(): Promise<{
   currentUser?: API.CurrentUser;
   web3?: Web3;
   account?: string;
+  didInfo?: DID.DidInfo;
   currentAccount?: DID.CurrentAccount;
   loading?: boolean;
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
@@ -40,15 +41,15 @@ export async function getInitialState(): Promise<{
       await ethereum.request({
         method: 'wallet_switchEthereumChain',
         // params: [{ chainId: '0x89'}]
-          params: [{ chainId: Chains.Ropsten.ChainId}]
+          params: [{ chainId: Chains.Rinkeby.ChainId}]
       });
     } catch (error: any) {
       if(error.code === 4902) {
           await ethereum.request({
             method: 'wallet_addEthereumChain',
             params: [{
-              chainId: Chains.Ropsten.ChainId,
-              rpcUrl: Chains.Ropsten.rpcUrl,
+              chainId: Chains.Rinkeby.ChainId,
+              rpcUrl: Chains.Rinkeby.rpcUrl,
             }]
           })
       }

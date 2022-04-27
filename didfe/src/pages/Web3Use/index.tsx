@@ -22,7 +22,7 @@ const Web3Use: React.FC = () => {
         await ethereum.request({
           method: 'wallet_switchEthereumChain',
           // params: [{ chainId: '0x89'}]
-            params: [{ chainId: Chains.Ropsten.ChainId}]
+            params: [{ chainId: Chains.Rinkeby.ChainId}]
         });
       } catch (error: any) {
         console.log(error)
@@ -30,8 +30,8 @@ const Web3Use: React.FC = () => {
             await ethereum.request({
               method: 'wallet_addEthereumChain',
               params: [{
-                chainId: Chains.Ropsten.ChainId,
-                rpcUrl: Chains.Ropsten.rpcUrl,
+                chainId: Chains.Rinkeby.ChainId,
+                rpcUrl: Chains.Rinkeby.rpcUrl,
               }]
             })
         }

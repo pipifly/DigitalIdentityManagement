@@ -70,5 +70,16 @@ declare namespace DID {
     signature: string;
   }
 
+  type DidInfo = {
+    address: string;
+    didInstance: any;
+    createdVcs: VcDocument[];
+    receivedVcs: VcDocument[];
+  }
+
+  type SpinState = {
+    spinning: boolean; 
+    tip?: string;
+  }
 }
 
