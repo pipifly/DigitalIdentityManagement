@@ -27,12 +27,21 @@ interface Window {
   ethereum: any
 } 
 
+declare module "*.json" {
+  const value: any;
+  export default value;
+}
 declare namespace DID {
   
   type CurrentAccount = {
     account?: string;
     holdVc?: any [];
     createdVc: any [];
+  }
+
+  type LoginResult = {
+    status?: string;
+    msg?: string;
   }
 
   type VcInfo = {
@@ -60,4 +69,6 @@ declare namespace DID {
     v: string;
     signature: string;
   }
+
 }
+

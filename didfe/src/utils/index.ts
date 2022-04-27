@@ -35,5 +35,14 @@ function publicKeyToAccount(publicKey: Uint8Array) {
   return Web3.utils.toChecksumAddress(hash.slice(-20).toString('hex'))
 }
 
-
-export {signString, recoverPublicKey, publicKeyToAccount};
+import didAbi from './DidABI.json';
+import didBytecode from './DidBytecode.json';
+import Chains from './chains';
+export { 
+  signString, 
+  recoverPublicKey, 
+  publicKeyToAccount, 
+  didAbi, 
+  didBytecode,
+  Chains,
+};
