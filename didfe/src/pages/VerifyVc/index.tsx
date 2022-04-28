@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
-import { Card, Alert, Typography, Input, Button, message } from 'antd';
-import { recoverPublicKey, publicKeyToAccount } from '@/utils'
+import { Card, Alert, Spin, Input, Button, message } from 'antd';
+import { useModel } from 'umi';
+import { recoverPublicKey, publicKeyToAccount, didAbi } from '@/utils'
 const { TextArea } = Input;
 
 const VerifyVc: React.FC = () => {
-  
+
+  const { initialState, setInitialState } = useModel('@@initialState');
   const [vcContent, setVcContent] = useState<string>("");
 
-  const verifySig = (): boolean => {
+  const [ spinState, setSpinState ] = useState<DID.SpinState>({spinning: false})
 
-    const jsonData: DID.VcDocument = JSON.parse(vcContent);
-    const { info, proof } = jsonData;
+  const verifySig = (info: DID.VcInfo, proof: DID.VcProof): boolean => {
+
+    
+    
     const pubKey = recoverPublicKey(JSON.stringify(info), proof.signature, parseInt(proof.signature.slice(130, 132), 16) - 27);
     const recoverAccount = publicKeyToAccount(pubKey);
     console.log(proof.creator, recoverAccount);
@@ -21,14 +25,33 @@ const VerifyVc: React.FC = () => {
     return false;
   };
 
-  const verifyVC = () => {
-    if(verifySig()){
-      message.success('提交成功');
-    } else {
-      message.error("验证VC失败");
-    }
+  const enabledVc = async (signature: string): Promise<boolean> => {
+    const { web3 } = initialState;
+    let didInstance = new web3.eth.Contract(didAbi, initialState?.didInfo?.address);
+    const sig_32bytes = web3.utils.soliditySha3(signature);
+    const res_created = await didInstance.methods.createdVC(sig_32bytes).call();
+    return res_created; 
   };
 
+  const verifyVc = async () => {
+    const jsonData: DID.VcDocument = JSON.parse(vcContent);
+    const { info, proof } = jsonData;
+    setSpinState({spinning: true, tip: "正在启用此 VC"});
+    if(verifySig(info, proof)){
+      if(await enabledVc(proof.signature)) {
+
+        message.success('验证成功');
+      }
+      else {
+        message.error("此 VC 未启用")
+      }  
+    } else {
+    message.error("验证 VC 签名失败");
+    }
+    setSpinState({spinning: false});
+  };
+
+  const { spinning, tip } = spinState;
   return (
     <PageContainer>
       <Card>
@@ -42,15 +65,16 @@ const VerifyVc: React.FC = () => {
           marginBottom: 24,
         }}
       />
-      <TextArea 
-        rows={18} 
-        autoSize={true}
-        onChange={(e) => { 
-          setVcContent(e.target.value); 
-        }} 
-      />
-      <Button style={{marginTop: 24}} onClick={verifyVC} type="primary"> 验证 </Button>
-
+      <Spin spinning={spinning} tip={tip}>
+        <TextArea 
+          rows={18} 
+          autoSize={true}
+          onChange={(e) => { 
+            setVcContent(e.target.value); 
+          }} 
+        />
+        <Button style={{marginTop: 24}} onClick={verifyVc} type="primary"> 验证 </Button>
+      </Spin>
       </Card>
     </PageContainer>
   );

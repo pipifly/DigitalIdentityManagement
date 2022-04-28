@@ -10,7 +10,7 @@ import { currentUser as queryCurrentUser } from './services/ant-design-pro/api';
 import { BookOutlined, LinkOutlined } from '@ant-design/icons';
 import defaultSettings from '../config/defaultSettings';
 import Web3 from 'web3';
-import Chains from './utils/chains';
+import {Chains, verifyOwner, didAbi} from '@/utils';
 
 const loginPath = '/user/login';
 
@@ -27,26 +27,29 @@ export async function getInitialState(): Promise<{
   currentUser?: API.CurrentUser;
   web3?: Web3;
   account?: string;
+  didInfo?: DID.DidInfo;
   currentAccount?: DID.CurrentAccount;
   loading?: boolean;
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
 }> {
   console.log("app.tsx getInitialState");
+  const { ethereum } = window;
+  const web3 = new Web3(window.ethereum);
 
   const setChainId = async (ethereum: any) => {
     try {
       await ethereum.request({
         method: 'wallet_switchEthereumChain',
         // params: [{ chainId: '0x89'}]
-          params: [{ chainId: Chains.Ropsten.ChainId}]
+          params: [{ chainId: Chains.Rinkeby.ChainId}]
       });
     } catch (error: any) {
       if(error.code === 4902) {
           await ethereum.request({
             method: 'wallet_addEthereumChain',
             params: [{
-              chainId: Chains.Ropsten.ChainId,
-              rpcUrl: Chains.Ropsten.rpcUrl,
+              chainId: Chains.Rinkeby.ChainId,
+              rpcUrl: Chains.Rinkeby.rpcUrl,
             }]
           })
       }
@@ -54,17 +57,13 @@ export async function getInitialState(): Promise<{
   }
 
   const fetchAccountInfo = async () => {
-    const { ethereum } = window;
+    
     try {
       await setChainId(ethereum);
-      const web3 = new Web3(ethereum);
       const accounts = await web3.eth.getAccounts();
-
-      console.log("accounts", accounts);
       if (accounts.length === 0) throw "account undefined";
-      return {web3: web3, account: accounts[0], }
+      return accounts[0];
     } catch (error) {
-      console.log(error);
       history.push(loginPath);
     }
     return undefined;
@@ -78,20 +77,49 @@ export async function getInitialState(): Promise<{
     }
     return undefined;
   };
+  const fetchDidInfo = async (account: string | undefined): Promise<DID.DidInfo | undefined> => {
+    try {
+      if(!account) throw("no account")
+      let accountMapDidAddress = JSON.parse(window.localStorage.getItem("ama") || '{}');
+      const didAddress = accountMapDidAddress[account];
+      if(didAddress) {
+        const isOwner = await verifyOwner(web3, didAddress, didAbi, account);
+        if(isOwner === false) throw("did owner changed");
+
+        let didsInfo: DID.DidInfo[] = JSON.parse(window.localStorage.getItem('didsDict') || '{}');
+        if(didsInfo[didAddress]) {
+          return didsInfo[didAddress];
+        } else {
+          throw("goto login connect account with did")
+        }
+        
+      } 
+      throw("account does not has a did")
+    } catch (error) {
+      history.push(loginPath);
+    }
+    return undefined;
+  }
+
+  const currentAccount = await fetchAccountInfo();
   // 如果不是登录页面，执行
   if (history.location.pathname !== loginPath) {
-    const currentAccount = await fetchAccountInfo();
+    const currentDidInfo = await fetchDidInfo(currentAccount);
     const currentUser = await fetchUserInfo();
     return {
       fetchUserInfo,
       currentUser,
       settings: defaultSettings,
-      ...currentAccount
+      web3: web3,
+      account: currentAccount,
+      didInfo: currentDidInfo,
     };
   }
   return {
     fetchUserInfo,
     settings: defaultSettings,
+    web3: web3,
+    account: currentAccount
   };
 }
 
@@ -115,10 +143,17 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       // if (initialState?.loading) return <PageLoading />;
       useEffect(() => {
         if(window.ethereum) {
-          // window.ethereum.on('chainChanged', () => {
+          // window.ethereum.on('chainChanged', (networkId) => {
           //   window.location.reload();
           // })
-          window.ethereum.on('accountsChanged', () => {
+          window.ethereum.on('accountsChanged', async () => {
+            const selectedAccount = await window.ethereum.selectedAddress;
+            // console.log("selectedAccount", selectedAccount);
+            setInitialState((s) => ({ ...s, account: selectedAccount }));
+            if(!selectedAccount) {
+              history.push(loginPath);
+              return;
+            }
             if(!props.location?.pathname?.includes('/login'))
               window.location.reload();
           })
@@ -128,7 +163,6 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       return (
         <>
           {children}
-          {!props.location?.pathname?.includes('/login') && (
             <SettingDrawer
               disableUrlParams
               enableDarkTheme
@@ -140,7 +174,6 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
                 }));
               }}
             />
-          )}
         </>
       );
     },

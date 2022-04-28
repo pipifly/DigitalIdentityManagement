@@ -16,8 +16,8 @@ const Welcome: React.FC = () => {
     <PageContainer>
       <Card>
         <Alert
-          message={'更快更强的重型组件，已经发布。'}
-          type="success"
+          message={'登录、 创建Did、创建VC、验证VC、管理(启用或停用)创建的VC'}
+          type="info"
           showIcon
           banner
           style={{
@@ -25,33 +25,7 @@ const Welcome: React.FC = () => {
             marginBottom: 24,
           }}
         />
-        <Typography.Text strong>
-          高级表格{' '}
-          <a
-            href="https://procomponents.ant.design/components/table"
-            rel="noopener noreferrer"
-            target="__blank"
-          >
-            欢迎使用
-          </a>
-        </Typography.Text>
-        <CodePreview>yarn add @ant-design/pro-table</CodePreview>
-        <Typography.Text
-          strong
-          style={{
-            marginBottom: 12,
-          }}
-        >
-          高级布局{' '}
-          <a
-            href="https://procomponents.ant.design/components/layout"
-            rel="noopener noreferrer"
-            target="__blank"
-          >
-            欢迎使用
-          </a>
-        </Typography.Text>
-        <CodePreview>yarn add @ant-design/pro-layout</CodePreview>
+
       </Card>
     </PageContainer>
   );

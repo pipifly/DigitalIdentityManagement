@@ -1,6 +1,9 @@
 import secp256k1 from 'secp256k1';
 import createKeccakHash from 'keccak';
 import Web3 from "web3";
+import didAbi from './DidABI.json';
+import didBytecode from './DidBytecode.json';
+import Chains from './chains';
 
 async function signString(content: string, web3: Web3, account: string): Promise<DID.SignResult> {
   const dataHex = Web3.utils.utf8ToHex(content);
@@ -35,5 +38,23 @@ function publicKeyToAccount(publicKey: Uint8Array) {
   return Web3.utils.toChecksumAddress(hash.slice(-20).toString('hex'))
 }
 
+const verifyOwner = async (web3: Web3, didAddress: string, didAbi: any, account: string): Promise<boolean> => {
+  try {
+    let didInstance = new web3.eth.Contract(didAbi, didAddress);
+    const res = await didInstance.methods.owner().call();
+    if(res === account) return true;
+    return false;
+  } catch(error) {
+    return false
+  }
+}
 
-export {signString, recoverPublicKey, publicKeyToAccount};
+export { 
+  signString, 
+  recoverPublicKey, 
+  publicKeyToAccount, 
+  didAbi, 
+  didBytecode,
+  Chains,
+  verifyOwner,
+};
