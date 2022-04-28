@@ -3,7 +3,7 @@ import { Alert, message, Spin } from 'antd';
 import { ProFormText, LoginForm } from '@ant-design/pro-form';
 import type { ProFormInstance } from '@ant-design/pro-form';
 import { history, useModel } from 'umi';
-import { didAbi, didBytecode } from '@/utils';
+import { didAbi, didBytecode, verifyOwner } from '@/utils';
 import styles from './index.less';
 
 const LoginMessage: React.FC<{
@@ -32,7 +32,7 @@ const Login: React.FC = () => {
       account: account,
     });
   }, [account])
-  
+
   const fetchUserInfo = async () => {
     const userInfo = await initialState?.fetchUserInfo?.();
 
@@ -41,22 +41,12 @@ const Login: React.FC = () => {
     }
   };
 
-  const verifyOwner = async (didAddress: string): Promise<boolean> => {
-    try {
-      let didInstance = new web3.eth.Contract(didAbi, didAddress);
-      const res = await didInstance.methods.owner().call();
-      if(res === account) return true;
-      return false;
-    } catch(error) {
-      return false
-    }
-  }
   
   const handleSubmit = async (values) => {
     try {
       const { account, didAddress } = values;
       setSpinState({spinning: true, tip: "验证 DID 是否属于此账户"});
-      const isOwner = await verifyOwner(didAddress);
+      const isOwner = await verifyOwner(web3, didAddress, didAbi, account);
       setSpinState({spinning: false});
       if(isOwner === false) {
         setUserLoginState({status: 'error', msg: 'DID 不属于此账户'});
@@ -64,10 +54,23 @@ const Login: React.FC = () => {
       } 
       let didInfo: DID.DidInfo = {
         address: didAddress,
-        didInstance: new web3.eth.Contract(didAbi, didAddress),
         createdVcs: [],
-        receivedVcs: [],
+        holdedVcs: [],
       };
+      let accountMapDidAddress = JSON.parse(window.localStorage.getItem("ama") || '{}');
+      accountMapDidAddress[account] = didAddress;
+      window.localStorage.setItem('ama', JSON.stringify(accountMapDidAddress));
+
+      let didsInfo: DID.DidInfo[] = JSON.parse(window.localStorage.getItem('didsDict') || '{}');
+      if(didAddress in didsInfo === false ) {
+        didsInfo[didAddress] = {
+          address: didAddress,
+          createdVcs: [],
+          holdedVcs: [],
+        };
+      };
+      window.localStorage.setItem('didsDict', JSON.stringify(didsInfo));
+      
       await setInitialState((s) => ({ ...s, didInfo: didInfo })); 
 
       const defaultLoginSuccessMessage = '登录成功！';

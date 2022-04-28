@@ -72,9 +72,8 @@ declare namespace DID {
 
   type DidInfo = {
     address: string;
-    didInstance: any;
     createdVcs: VcDocument[];
-    receivedVcs: VcDocument[];
+    holdedVcs: VcDocument[];
   }
 
   type SpinState = {

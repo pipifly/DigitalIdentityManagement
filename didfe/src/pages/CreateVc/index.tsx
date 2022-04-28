@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
-import { Input, message } from 'antd';
+import { Input, message, Button } from 'antd';
 import ProForm, { ProFormText } from '@ant-design/pro-form';
 import type { ProColumns } from '@ant-design/pro-table';
 import { EditableProTable } from '@ant-design/pro-table';
@@ -86,6 +86,10 @@ const CreateVc: React.FC = () => {
     setVc(vcDocument);
   };
 
+  const enableVc = async () => {
+    
+  }
+
   return (
     <PageContainer
       // content="创建VC"
@@ -121,7 +125,7 @@ const CreateVc: React.FC = () => {
               setVc({});
             }}
             initialValues={{
-              issuerDid: initialState?.account,
+              issuerDid: initialState?.didInfo?.address,
               useMode: 'chapter',
             }}
           >
@@ -131,11 +135,10 @@ const CreateVc: React.FC = () => {
                 name="issuerDid"
                 label="发行人Did"
                 placeholder="issuer Did"
-                required
               />
-              <ProFormText required width="lg" name="holderDid" label="持有人Did" placeholder="holder Did" />
+              <ProFormText rules={[{ required: true, message: '请输入持有人 DID' }]} width="lg" name="holderDid" label="持有人Did" placeholder="holder Did" />
             </ProForm.Group>
-            <ProFormText required width="md" name="id" label="VC编号" />
+            <ProFormText rules={[{ required: true, message: '请输入 VC 编号' }]} width="md" name="id" label="VC编号" />
             <ProForm.Item
               label="VC内容"
               name="dataSource"
@@ -171,6 +174,14 @@ const CreateVc: React.FC = () => {
 
         <ProCard style={{ marginTop: 8 }} title="VC 文档" bordered>
           <JSONPretty id="json-pretty" data={vc} />
+          <Button 
+            type="primary" 
+            style={{ marginTop: 8 }} 
+            disabled={ vc && vc.length > 0 ? false : true } 
+            onClick={enableVc}
+          >
+            启用
+          </Button>
         </ProCard>
 
   

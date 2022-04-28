@@ -10,7 +10,7 @@ import { currentUser as queryCurrentUser } from './services/ant-design-pro/api';
 import { BookOutlined, LinkOutlined } from '@ant-design/icons';
 import defaultSettings from '../config/defaultSettings';
 import Web3 from 'web3';
-import Chains from './utils/chains';
+import {Chains, verifyOwner, didAbi} from '@/utils';
 
 const loginPath = '/user/login';
 
@@ -62,9 +62,8 @@ export async function getInitialState(): Promise<{
       await setChainId(ethereum);
       const accounts = await web3.eth.getAccounts();
       if (accounts.length === 0) throw "account undefined";
-      return { account: accounts[0] }
+      return accounts[0];
     } catch (error) {
-      console.log(error);
       history.push(loginPath);
     }
     return undefined;
@@ -78,23 +77,49 @@ export async function getInitialState(): Promise<{
     }
     return undefined;
   };
+  const fetchDidInfo = async (account: string | undefined): Promise<DID.DidInfo | undefined> => {
+    try {
+      if(!account) throw("no account")
+      let accountMapDidAddress = JSON.parse(window.localStorage.getItem("ama") || '{}');
+      const didAddress = accountMapDidAddress[account];
+      if(didAddress) {
+        const isOwner = await verifyOwner(web3, didAddress, didAbi, account);
+        if(isOwner === false) throw("did owner changed");
+
+        let didsInfo: DID.DidInfo[] = JSON.parse(window.localStorage.getItem('didsDict') || '{}');
+        if(didsInfo[didAddress]) {
+          return didsInfo[didAddress];
+        } else {
+          throw("goto login connect account with did")
+        }
+        
+      } 
+      throw("account does not has a did")
+    } catch (error) {
+      history.push(loginPath);
+    }
+    return undefined;
+  }
+
   const currentAccount = await fetchAccountInfo();
   // 如果不是登录页面，执行
   if (history.location.pathname !== loginPath) {
+    const currentDidInfo = await fetchDidInfo(currentAccount);
     const currentUser = await fetchUserInfo();
     return {
       fetchUserInfo,
       currentUser,
       settings: defaultSettings,
       web3: web3,
-      ...currentAccount
+      account: currentAccount,
+      didInfo: currentDidInfo,
     };
   }
   return {
     fetchUserInfo,
     settings: defaultSettings,
     web3: web3,
-    ...currentAccount
+    account: currentAccount
   };
 }
 
