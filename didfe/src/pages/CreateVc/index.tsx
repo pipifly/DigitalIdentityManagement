@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
 import ProCard from '@ant-design/pro-card';
-import { Input, message, Button } from 'antd';
+import { Input, message, Button, Space, Spin } from 'antd';
 import ProForm, { ProFormText } from '@ant-design/pro-form';
 import type { ProColumns } from '@ant-design/pro-table';
 import { EditableProTable } from '@ant-design/pro-table';
@@ -9,7 +9,7 @@ import { useModel } from 'umi';
 import styles from './index.less';
 import JSONPretty from 'react-json-pretty';
 import 'react-json-pretty/themes/monikai.css';
-import { signString } from '@/utils';
+import { signString, didAbi } from '@/utils';
 
 const waitTime = (time: number = 100) => {
   return new Promise((resolve) => {
@@ -56,6 +56,9 @@ const CreateVc: React.FC = () => {
     defaultData.map((item) => item.id),
   );
   const [vc, setVc] = useState<any>({});
+  const [ spinState, setSpinState ] = useState<DID.SpinState>({spinning: false})
+
+  const { web3, account, didInfo } = initialState;
 
   const formMapVc = async (values: any) => {
     let vcInfo: DID.VcInfo = {
@@ -72,12 +75,12 @@ const CreateVc: React.FC = () => {
     }
     vcInfo.credentialSubject = vcSubject;
 
-    const signature: DID.SignResult = await signString(JSON.stringify(vcInfo), initialState?.web3, initialState?.account);
+    const signature: DID.SignResult = await signString(JSON.stringify(vcInfo), web3, account);
 
     let vcDocument: DID.VcDocument = {
       info: vcInfo,
       proof: {
-        creator: initialState?.account || '',
+        creator: account || '',
         type: "Secp256k1",
         signature: signature.signature
       }
@@ -86,10 +89,37 @@ const CreateVc: React.FC = () => {
     setVc(vcDocument);
   };
 
-  const enableVc = async () => {
-    
+  const copyVc = () => {
+    navigator.clipboard.writeText(JSON.stringify(vc, null, 2));
   }
 
+  const enableVc = async () => {
+    try {
+      setSpinState({spinning: true, tip: "正在启用此 VC"});
+      let didInstance = new web3.eth.Contract(didAbi, initialState?.didInfo?.address);
+      const signature = vc.proof.signature;
+      const sig_32bytes = web3.utils.soliditySha3(signature);
+      const res = await didInstance.methods.createVC(sig_32bytes).send({
+        from: account
+      });
+      console.log(sig_32bytes);
+      console.log(res);
+
+      const res_created = await didInstance.methods.createdVC(sig_32bytes).call();
+      if(res_created) {
+        message.success("启用此VC成功")
+      } else {
+        message.error("启用此VC失败")
+      }
+      
+    } catch(error) {
+      console.log(error);
+    } finally {
+      setSpinState({spinning: false});
+    };
+  }
+
+  const { spinning, tip } = spinState;
   return (
     <PageContainer
       // content="创建VC"
@@ -125,7 +155,7 @@ const CreateVc: React.FC = () => {
               setVc({});
             }}
             initialValues={{
-              issuerDid: initialState?.didInfo?.address,
+              issuerDid: didInfo?.address,
               useMode: 'chapter',
             }}
           >
@@ -173,15 +203,28 @@ const CreateVc: React.FC = () => {
         </ProCard>
 
         <ProCard style={{ marginTop: 8 }} title="VC 文档" bordered>
-          <JSONPretty id="json-pretty" data={vc} />
-          <Button 
-            type="primary" 
-            style={{ marginTop: 8 }} 
-            disabled={ vc && vc.length > 0 ? false : true } 
-            onClick={enableVc}
-          >
-            启用
-          </Button>
+          <Spin spinning={spinning} tip={tip}>
+            <JSONPretty id="json-pretty" data={vc} />
+            <Space>
+              <Button 
+                type="primary" 
+                style={{ marginTop: 8 }} 
+                onClick={copyVc}
+                >
+                复制
+              </Button>
+
+              <Button 
+                type="primary" 
+                style={{ marginTop: 8 }} 
+                disabled={ vc && Object.getOwnPropertyNames(vc).length > 0 ? false : true } 
+                onClick={enableVc}
+                >
+                启用
+              </Button>
+            </Space>
+          </Spin>
+
         </ProCard>
 
   
