@@ -45,7 +45,7 @@ declare namespace DID {
   }
 
   type VcInfo = {
-    "id": string;
+    "type": string;
     "issuer": string;
     "holder": string;
     "issuanceDate": string;
