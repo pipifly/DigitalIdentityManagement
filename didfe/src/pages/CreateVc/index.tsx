@@ -62,7 +62,7 @@ const CreateVc: React.FC = () => {
 
   const formMapVc = async (values: any) => {
     let vcInfo: DID.VcInfo = {
-      id: values.id,
+      type: values.type,
       issuer: values.issuerDid,
       holder: values.holderDid,
       issuanceDate: (new Date()).toISOString(),
@@ -168,7 +168,7 @@ const CreateVc: React.FC = () => {
               />
               <ProFormText rules={[{ required: true, message: '请输入持有人 DID' }]} width="lg" name="holderDid" label="持有人Did" placeholder="holder Did" />
             </ProForm.Group>
-            <ProFormText rules={[{ required: true, message: '请输入 VC 编号' }]} width="md" name="id" label="VC编号" />
+            <ProFormText rules={[{ required: true, message: '请输入 VC 类型' }]} width="md" name="type" label="VC类型" />
             <ProForm.Item
               label="VC内容"
               name="dataSource"
