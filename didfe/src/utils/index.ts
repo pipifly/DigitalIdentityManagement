@@ -49,6 +49,38 @@ const verifyOwner = async (web3: Web3, didAddress: string, didAbi: any, account:
   }
 }
 
+const enDisableVc = async (web3: Web3, account: string, didAddr: string, signature: string, toStatus: boolean) => {
+  try {
+    let didInstance = new web3.eth.Contract(didAbi, didAddr);
+    const sig_32bytes = web3.utils.soliditySha3(signature);
+    const res_created = await didInstance.methods.createdVC(sig_32bytes).call();
+    if(res_created === toStatus) 
+      return true;
+    if(toStatus) {
+      const res = await didInstance.methods.createVC(sig_32bytes).send({
+        from: account 
+      });
+    } else {
+      await didInstance.methods.removeVC(sig_32bytes).send({
+        from: account
+      })
+    }
+    return true;
+  } catch(error) {
+    return false;
+  }
+
+}
+
+const queryVcEnabled = async (signature: string, web3: Web3, contractAddr: string): Promise<boolean> => {
+  let didInstance = new web3.eth.Contract(didAbi, contractAddr);
+  const sig_32bytes = web3.utils.soliditySha3(signature);
+  const res_created = await didInstance.methods.createdVC(sig_32bytes).call();
+  console.log("queryVcEnabled", res_created);
+  return res_created; 
+};
+
+
 export { 
   signString, 
   recoverPublicKey, 
@@ -57,4 +89,6 @@ export {
   didBytecode,
   Chains,
   verifyOwner,
+  queryVcEnabled,
+  enDisableVc,
 };

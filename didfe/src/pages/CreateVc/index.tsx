@@ -9,7 +9,7 @@ import { useModel } from 'umi';
 import styles from './index.less';
 import JSONPretty from 'react-json-pretty';
 import 'react-json-pretty/themes/monikai.css';
-import { signString, didAbi } from '@/utils';
+import { signString, enDisableVc } from '@/utils';
 
 const waitTime = (time: number = 100) => {
   return new Promise((resolve) => {
@@ -56,7 +56,7 @@ const CreateVc: React.FC = () => {
     defaultData.map((item) => item.id),
   );
   const [vc, setVc] = useState<any>({});
-  const [ spinState, setSpinState ] = useState<DID.SpinState>({spinning: false})
+  const [spinState, setSpinState] = useState<DID.SpinState>({spinning: false})
 
   const { web3, account, didInfo } = initialState;
 
@@ -87,25 +87,21 @@ const CreateVc: React.FC = () => {
     };
 
     setVc(vcDocument);
+    const didAddr = didInfo.address;
+    let didsInfo: DID.DidInfo[] = JSON.parse(window.localStorage.getItem('didsDict') || '{}');
+    didsInfo[didAddr].createdVcs.push(vcDocument);
+    window.localStorage.setItem('didsDict', JSON.stringify(didsInfo));
   };
 
   const copyVc = () => {
     navigator.clipboard.writeText(JSON.stringify(vc, null, 2));
   }
 
-  const enableVc = async () => {
+  const onEnableVc = async () => {
     try {
       setSpinState({spinning: true, tip: "正在启用此 VC"});
-      let didInstance = new web3.eth.Contract(didAbi, initialState?.didInfo?.address);
       const signature = vc.proof.signature;
-      const sig_32bytes = web3.utils.soliditySha3(signature);
-      const res = await didInstance.methods.createVC(sig_32bytes).send({
-        from: account
-      });
-      console.log(sig_32bytes);
-      console.log(res);
-
-      const res_created = await didInstance.methods.createdVC(sig_32bytes).call();
+      const res_created = await enDisableVc(web3, account, initialState?.didInfo?.address, signature, true);
       if(res_created) {
         message.success("启用此VC成功")
       } else {
@@ -218,7 +214,7 @@ const CreateVc: React.FC = () => {
                 type="primary" 
                 style={{ marginTop: 8 }} 
                 disabled={ vc && Object.getOwnPropertyNames(vc).length > 0 ? false : true } 
-                onClick={enableVc}
+                onClick={onEnableVc}
                 >
                 启用
               </Button>

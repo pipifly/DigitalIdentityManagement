@@ -80,5 +80,20 @@ declare namespace DID {
     spinning: boolean; 
     tip?: string;
   }
+
+  type PageParams = {
+    current?: number;
+    pageSize?: number;
+  }
+
+  type CreatedVcListItem = {
+    key?: number;
+    sig?: string;
+    type?: string;
+    holder?: string;
+    createdAt?: string;
+    status?: number;
+    vcDoc?: VcDocument;
+  }
 }
 

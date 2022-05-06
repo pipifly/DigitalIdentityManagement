@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
 import { Card, Alert, Spin, Input, Button, message } from 'antd';
 import { useModel } from 'umi';
-import { recoverPublicKey, publicKeyToAccount, didAbi } from '@/utils'
+import { recoverPublicKey, publicKeyToAccount, queryVcEnabled } from '@/utils'
 const { TextArea } = Input;
 
 const VerifyVc: React.FC = () => {
@@ -25,20 +25,13 @@ const VerifyVc: React.FC = () => {
     return false;
   };
 
-  const enabledVc = async (signature: string): Promise<boolean> => {
-    const { web3 } = initialState;
-    let didInstance = new web3.eth.Contract(didAbi, initialState?.didInfo?.address);
-    const sig_32bytes = web3.utils.soliditySha3(signature);
-    const res_created = await didInstance.methods.createdVC(sig_32bytes).call();
-    return res_created; 
-  };
 
   const verifyVc = async () => {
     const jsonData: DID.VcDocument = JSON.parse(vcContent);
     const { info, proof } = jsonData;
-    setSpinState({spinning: true, tip: "正在启用此 VC"});
+    setSpinState({spinning: true, tip: "正在验证此 VC 是否启用"});
     if(verifySig(info, proof)){
-      if(await enabledVc(proof.signature)) {
+      if(await queryVcEnabled(proof.signature, initialState?.web3, initialState?.didInfo?.address)) {
 
         message.success('验证成功');
       }
