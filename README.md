@@ -1,3 +1,18 @@
+
+# 运行方法
+```
+git clone https://github.com/j5465/DigitalIdentityManagement.git
+cd didbe
+pip install -r requirement.txt
+python manage.py makemigrations
+python manage.py migrate
+python manage.py runserver 0.0.0.0:5465
+
+cd didfe
+npm install 
+npm run start:dev
+
+```
 ### ERC728 DID claim holder例子
 
 可以先看
@@ -23,10 +38,7 @@ signString 函数里给数据签名后，recover 后的公钥是 *04caa5418a17c6
 
 signdata演示了给数据签名，验签，和公钥生成以太坊地址的过程。
 
-```
-npm install 
-npm run signdata 
-```
+
 
 [**web3js方法列表**](http://cw.hubwiz.com/card/c/web3.js-1.0/1/2/23/l)
 
