@@ -1,26 +1,32 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
-import { Card, message, Modal, Button } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Card, message, Modal, Button, Input, Drawer } from 'antd';
+import { UserOutlined  } from '@ant-design/icons';
 import ProTable from '@ant-design/pro-table';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import { history, useModel } from 'umi';
 import { queryVcEnabled, enDisableVc } from '@/utils';
+import { sendVc, getVc, deleteVc } from '@/services/did/api';
+import JSONPretty from 'react-json-pretty';
+import 'react-json-pretty/themes/monikai.css';
+import './index.css';
 
 const VerifyVc: React.FC = () => {
   const { initialState, setInitialState } = useModel('@@initialState');
   const { web3, account, didInfo } = initialState;
-  const [showDetail, setShowDetail] = useState<boolean>(false);
   const actionRef = useRef<ActionType>();
-  const [currentRow, setCurrentRow] = useState<DID.CreatedVcListItem>();
+  const [currentRecord, setCurrentRecord] = useState<DID.CreatedVcListItem>();
   const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [showDetail, setShowDetail] = useState<boolean>(false);
+  const [verifyDid, setVerifyDid] = useState<string>();
 
   const getListByParmas = async (parms: DID.PageParams) => {
     const { current = 1, pageSize = 20 } = parms;
     const didAddr = didInfo.address;
-    let didsInfo: DID.DidInfo[] = JSON.parse(window.localStorage.getItem('didsDict') || '{}');
-    let createdVcs: DID.VcDocument[] = didsInfo[didInfo.address].createdVcs;
-    let slicedVcs: DID.VcDocument[] = [...createdVcs].slice(
+    
+    let holdedVcs: DID.VcDocument[] = await getVc({todid: didAddr, type: 0});
+
+    let slicedVcs: DID.VcDocument[] = [...holdedVcs].slice(
       ((current as number) - 1) * (pageSize as number),
       (current as number) * (pageSize as number),
     );
@@ -40,7 +46,7 @@ const VerifyVc: React.FC = () => {
         key: index,
         sig: proof.signature.slice(0, 6),
         type: info.type,
-        holder: "0x..." + info.holder.slice(-6),
+        holder: "0x..." + info.issuer.slice(-6),
         createdAt: info.issuanceDate,
         status: (await queryVcEnabled(proof.signature, initialState?.web3, didAddr)) ? 1 : 0,
         vcDoc: item
@@ -50,7 +56,7 @@ const VerifyVc: React.FC = () => {
     console.log(dataSource)
     return {
       data: dataSource,
-      total: createdVcs.length,
+      total: holdedVcs.length,
       success: true,
       pageSize,
       current: parseInt(`${current}`, 10) || 1,
@@ -59,47 +65,46 @@ const VerifyVc: React.FC = () => {
   const deleteItem = async (record: DID.CreatedVcListItem) => {
     const hide = message.loading('正在删除');
     try {
+      const res = await deleteVc([{todid: didInfo.address, vcsig: record.vcDoc?.proof.signature}]);
 
-      const nowStatus: boolean = record.status === 0 ? false : true;
-      if(nowStatus) {
-        await enDisableVc(web3, account, didInfo.address, record.vcDoc.proof.signature, false);
-    }
-    let didsInfo: DID.DidInfo[] = JSON.parse(window.localStorage.getItem('didsDict') || '{}');
-    let createdVcs: DID.VcDocument[] = didsInfo[didInfo.address].createdVcs;
-    createdVcs.map((item, i) => {
-      if(item.proof.signature === record.vcDoc?.proof.signature) {
-        createdVcs.splice(i, 1);
-      }
-    });
-    didsInfo[didInfo.address].createdVcs = createdVcs;
-    window.localStorage.setItem('didsDict', JSON.stringify(didsInfo));
-    hide();
-    message.success('删除成功');
-    actionRef.current?.reload?.();
-    return true;
-  } catch(error) {
-    hide();
-    message.error('删除失败，请稍后重试');
-    return false;
-  }
-  }
-  const toggleStatus = async (record: DID.CreatedVcListItem) => {
-    const nowStatus: boolean = record.status === 0 ? false : true;
-    const t = nowStatus ? '停用' : '启用'
-    const hide = message.loading(`正在${t}` );
-    try{
-      await enDisableVc(web3, account, didInfo.address, record.vcDoc.proof.signature, !nowStatus);
-      actionRef.current?.reloadAndRest?.();
       hide();
-      message.success(`${t}成功`);
+      message.success('删除成功');
+      actionRef.current?.reload?.();
       return true;
     } catch(error) {
       hide();
-      message.error(`${t}失败，请稍后重试`);
+      message.error('删除失败，请稍后重试');
       return false;
     }
-
   }
+
+  const sendItem = async () => {
+    if(!(verifyDid && verifyDid.length > 10)) {
+      message.error('请输入正确验证者 did');
+      return
+    }
+    const hide = message.loading(`正在发送` );
+    try{
+      const res = await sendVc({
+        vcdoc: currentRecord.vcDoc,
+        type: 1,
+        todid: verifyDid,
+      });
+      hide();
+      if(res){
+        message.success(`发送成功`);
+        setModalVisible(false)
+        return true;
+      }
+      message.error('发送失败，请稍后重试');
+      return false
+    } catch(error) {
+      hide();
+      message.error(`发送失败，请稍后重试`);
+      return false;
+    }
+  }
+
   const columns: ProColumns<DID.CreatedVcListItem>[] = [
     {
       title: 'VC 摘要',
@@ -109,8 +114,9 @@ const VerifyVc: React.FC = () => {
         return (
           <a
             onClick={() => {
-              setCurrentRow(entity);
-              setModalVisible(true);
+              console.log("setShowDetail");
+              setCurrentRecord(entity);
+              setShowDetail(true);
             }}
           >
             {dom}
@@ -123,7 +129,7 @@ const VerifyVc: React.FC = () => {
       dataIndex: 'type',
     },
     {
-      title: '持有人',
+      title: '发行方',
       dataIndex: 'holder',
     },
     {
@@ -150,14 +156,7 @@ const VerifyVc: React.FC = () => {
       dataIndex: 'option',
       valueType: 'option',
       render: (_, record: DID.CreatedVcListItem) => [
-        <a
-          key="toggleStatus"
-          onClick={() => {
-            toggleStatus(record);
-          }}
-        >
-          {record.status === 0? '启用' : '停用'}
-        </a>,
+
         <a 
           key="deleteItem" 
           onClick={() => {
@@ -166,6 +165,15 @@ const VerifyVc: React.FC = () => {
         >
           删除
         </a>,
+        <a 
+          key="sendItem" 
+          onClick={() => {
+            setModalVisible(true);
+            setCurrentRecord(record);
+          }}
+        >
+          发送验证
+        </a>,
       ],
     }
   ]
@@ -173,29 +181,57 @@ const VerifyVc: React.FC = () => {
   return (
     <PageContainer>
       <ProTable<DID.CreatedVcListItem, DID.PageParams>
-        headerTitle='创建的VC表格'
+        // headerTitle='创建的VC表格'
         actionRef={actionRef}
         rowKey="key"
         search={{
           labelWidth: 120,
         }}
         toolBarRender={() => [
-          <Button
-            type='primary'
-            key='primary'
-            onClick={() => {
-              history.push('/createvc');
-            }}
-          >
-            <PlusOutlined /> 新建
-          </Button>
+    
         ]}
         request={getListByParmas}
         columns={columns}
       />
-      <Modal>
+      <Modal
+        title={`发送给验证人`}
         visible={modalVisible}
+        maskClosable
+        closable={false}
+        onCancel={() => {setModalVisible(false)}}
+        onOk={() => {
+          sendItem()
+        }}
+        destroyOnClose
+      >
+        <Input 
+          placeholder="请输入验证人 DID" 
+          prefix={<UserOutlined />} 
+          onChange={(e) => { 
+            setVerifyDid(e.target.value); 
+          }} 
+        />
+        {/* {currentRecord?.sig} */}
       </Modal>
+      <Drawer
+        width={800}
+        visible={showDetail}
+        onClose={() => {
+          setCurrentRecord(undefined);
+          setShowDetail(false);
+        }}
+        closable={false}
+      >
+        <JSONPretty 
+          id="json-pretty" 
+          data={currentRecord?.vcDoc} 
+          style={{
+            height: '80vh',
+            marginTop: '20px'
+          }}
+        />
+
+      </Drawer>
     </PageContainer>
   );
 };

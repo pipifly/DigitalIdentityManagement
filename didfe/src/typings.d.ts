@@ -95,5 +95,21 @@ declare namespace DID {
     status?: number;
     vcDoc?: VcDocument;
   }
+
+  type SendVcParms = {
+    vcdoc: VcDocument;
+    type: number; // 0 hold 1 verify
+    todid: string;
+  }
+
+  // type HoldedVcListItem = {
+  //   key?: number;
+  //   sig?: string;
+  //   type: string;
+  //   issuer?: string;
+  //   createdAt?: string;
+  //   status?: number;
+  // }
+
 }
 
