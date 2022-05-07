@@ -90,7 +90,7 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu }) => {
       </Menu.Item>
     </Menu>
   );
-  const act = '0x...' + account?.slice(-4, );
+  const act = `${account?.slice(0,6)}...${account?.slice(-4,)}`;
   return (
     <HeaderDropdown overlay={menuHeaderDropdown}>
       <span className={`${styles.action} ${styles.account}`}>

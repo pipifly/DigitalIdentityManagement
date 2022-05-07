@@ -46,7 +46,7 @@ const VerifyVc: React.FC = () => {
         key: index,
         sig: proof.signature.slice(0, 6),
         type: info.type,
-        holder: "0x..." + info.issuer.slice(-6),
+        holder: `${info.holder.slice(0,6)}...${info.holder.slice(-4)}`,
         createdAt: info.issuanceDate,
         status: (await queryVcEnabled(proof.signature, initialState?.web3, didAddr)) ? 1 : 0,
         vcDoc: item
@@ -65,7 +65,7 @@ const VerifyVc: React.FC = () => {
   const deleteItem = async (record: DID.CreatedVcListItem) => {
     const hide = message.loading('正在删除');
     try {
-      const res = await deleteVc([{todid: didInfo.address, vcsig: record.vcDoc?.proof.signature}]);
+      const res = await deleteVc([{todid: didInfo.address, vcsig: record.vcDoc?.proof.signature, type: 0}]);
 
       hide();
       message.success('删除成功');
@@ -214,7 +214,8 @@ const VerifyVc: React.FC = () => {
         {/* {currentRecord?.sig} */}
       </Modal>
       <Drawer
-        width={800}
+        title='VC 详情'
+        width={700}
         visible={showDetail}
         onClose={() => {
           setCurrentRecord(undefined);
@@ -226,8 +227,8 @@ const VerifyVc: React.FC = () => {
           id="json-pretty" 
           data={currentRecord?.vcDoc} 
           style={{
-            height: '80vh',
-            marginTop: '20px'
+            // height: '80vh',
+            marginTop: '10px'
           }}
         />
 

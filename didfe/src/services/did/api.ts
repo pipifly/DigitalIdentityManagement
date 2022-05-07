@@ -39,7 +39,8 @@ export async function getVc(
 
 export async function deleteVc(body: {
   todid?: string;
-  vcsig?: string
+  vcsig?: string;
+  type?: number;
 }[], options?: { [key: string]: any}) {
   return request<boolean>('/back_end/deletevc', {
     method: 'POST',

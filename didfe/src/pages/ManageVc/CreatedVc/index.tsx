@@ -44,7 +44,7 @@ const VerifyVc: React.FC = () => {
         key: index,
         sig: proof.signature.slice(0, 6),
         type: info.type,
-        holder: "0x..." + info.holder.slice(-6),
+        holder: `${info.holder.slice(0,6)}...${info.holder.slice(-4)}`,
         createdAt: info.issuanceDate,
         status: (await queryVcEnabled(proof.signature, initialState?.web3, didAddr)) ? 1 : 0,
         vcDoc: item
@@ -244,7 +244,8 @@ const VerifyVc: React.FC = () => {
         getvc
       </Button>
       <Drawer
-        width={800}
+        title='VC 详情'
+        width={700}
         visible={showDetail}
         onClose={() => {
           setCurrentRecord(undefined);
@@ -256,8 +257,8 @@ const VerifyVc: React.FC = () => {
           id="json-pretty" 
           data={currentRecord?.vcDoc} 
           style={{
-            height: '80vh',
-            marginTop: '20px'
+            // height: '80vh',
+            marginTop: '10px'
           }}
         />
 
