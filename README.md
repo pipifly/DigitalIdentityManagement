@@ -3,7 +3,7 @@
 ```
 git clone https://github.com/j5465/DigitalIdentityManagement.git
 cd didbe
-pip install -r requirement.txt
+pip install -r requirements.txt
 python manage.py makemigrations
 python manage.py migrate
 python manage.py runserver 0.0.0.0:5465
@@ -26,7 +26,7 @@ https://hackernoon.com/first-impressions-with-erc-725-and-erc-735-identity-and-c
 ### js给数据签名和验签
 
 signData.js 是看[**web3, secp256k1 签名与Solidity验签**](https://zhuanlan.zhihu.com/p/69542679)写的。
-里面有给数据用secp256k1签名，可以用solidity的keccak256 验签。
+里面有给数据用secp256k1签名，可以用secp256k1包的recover函数验签。
 
 [**secp256k1包API**](https://github.com/cryptocoinjs/secp256k1-node/blob/v3.x/API.md)
 
@@ -46,7 +46,7 @@ signdata演示了给数据签名，验签，和公钥生成以太坊地址的过
 
 实现了createVC 和 removeVC。signature长为32字节。
 
-secp256k1 签名后的signature 长为65字节。使用`Web3.utils.soliditySha3(dataHex);`可以讲仍以长度hex格式数据hash到32字节。
+secp256k1 签名后的signature 长为65字节。使用`Web3.utils.soliditySha3(dataHex);`可以将任意长度hex格式数据hash到32字节。
 
 ```json
 {
